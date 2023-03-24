@@ -1,0 +1,23 @@
+﻿
+<div class="tooltip-container">
+    @ChildContent
+    <span style="color: @Color">@Text</span>
+</div>
+
+
+@code {
+    [Parameter] public string Text { get; set; }
+    //[Parameter] public string Color { get; set; } = "#fff";
+    private string _color;
+    [Parameter] public string Color {
+        get {
+            if (_color.Contains("♥") || _color.Contains("♦"))
+                return "red";
+            else if (_color.Contains("♠") || _color.Contains("♣"))
+                return "#fff";
+            else return _color;
+        }
+        set { _color = value; }
+    }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+}

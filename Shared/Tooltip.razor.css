@@ -1,0 +1,52 @@
+﻿/*
+.tooltip-container {
+    display: inline-flex;
+    justify-content: center;
+    align-items: end;
+}
+
+.tooltip-container span {
+    position: absolute;
+    width: 35px;
+    height: 23px;
+    visibility: hidden;
+    background-color: #333;
+    text-align: center;
+    border-radius: 3px;
+    z-index: 10;
+}
+
+.tooltip-container:hover span {
+    visibility: visible;
+}
+*/
+/*
+                    <Tooltip Color=@playerCards[0] Text=@playerCards[0]>
+                        <img src="card_assets/@cardImg[playerCards[0]]" />
+                    </Tooltip>
+                    int _offsetAdj = 16;
+                    _offsetAdj + = 22;
+*/
+
+
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-container span {
+    position: absolute;
+    visibility: hidden;
+    width: 36px;
+    left: -36px;
+    background-color: #333;
+    text-align: center;
+    border-radius: 3px;
+    z-index: 1;
+}
+
+.tooltip-container:hover span {
+    visibility: visible;
+}
+
+
