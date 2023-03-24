@@ -1,4 +1,5 @@
-﻿using System;
+﻿//I didn't add anything on here
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -10,37 +11,70 @@ namespace RaceTo21_Blazor
 {
     public static class Game
     {
-        static public int numberOfPlayers { get; set; } = 2;//players count
+        //store the player number from setting frame, default is 2
+        static private int _numberOfPlayers = 2;
+        static public int numberOfPlayers {
+            get { return _numberOfPlayers; } 
+            set
+            {
+                //the value should smaller than 9 bigger than 1
+                if (value > 8) value = 8;
+                if (value < 2) value = 2;
+                _numberOfPlayers = value;
+            }
+        }
 
-        //use public property to get set players list ,and set privatly
+        //use public property to get players list ,and set privately
         static private List<Player> _players = new();
         static public List<Player> players { get { return _players; } private set { _players = value; } }
 
-        static private Deck _deck = new(); //cards deck
+        static private Deck _deck = new(); //cards deck for call cards
         static public Deck deck { get { return _deck; } private set { _deck = value; } } //cards deck
 
-        static private int _currentPlayer = 0; //current turn of players
+        static private int _currentPlayer = 0; //current player number
         static public int currentPlayer { get { return _currentPlayer; } private set { _currentPlayer = value; } }
-        
+
         //use enum to store the next task
-        //save next task privatly
+        //it seems the default task in enum is SaveSetting (first in the list)
+        //so it doesn't need to set as SaveSetting at the beginning
         static private Tasks nextTask; //to define what to do next
         //track the first player who get the "highest score"
         static private int firstHighPoints = 0;
         //track the first "player" who get the "highest score"
         static private Player? firstHighPlayer;
         //the score to end the game
-        static public int gamesGoal { get; set; } = 21;
-        //
+
+        //the score to end the game
+        static private int _gamesGoal = 30;
+        static public int gamesGoal
+        {
+            get { return _gamesGoal; }
+            set
+            {
+                //the value should not bigger than 210 and smaller than 1
+                if (value > 210) value = 210;
+                if (value < 1) value = 1;
+                _gamesGoal = value;
+            }
+        }
+        //track the final winner, it also used in Index.razor
         static public Player? _finalWinner;
         static public Player? finalWinner { get { return _finalWinner; } private set { _finalWinner = value; } }
 
+        /* 
+         * reset the basic variables of the game
+         * call: none
+         * called by: game
+         * parameter: none
+         * return: none (void)
+         */
         static private void GameReset()
         {
+            //Deck newDeck = new Deck();
+            //deck = newDeck;
+            //same as above
             //claim a new deck for new game since some cards have removed
-            Deck newDeck = new Deck();
-            //apply the new deck for the game
-            deck = newDeck;
+            deck = new();
             //start from the new turn's first player
             //player might leave the game the, currentPlayer couldn't bigger than the player list
             currentPlayer = 0;
@@ -48,6 +82,7 @@ namespace RaceTo21_Blazor
             firstHighPoints = 0;
             //clear the list to store a new ranking
             CardTable.scoresRanking.Clear();
+            //empty finalWinner
             finalWinner = null;
         }
 
@@ -67,35 +102,39 @@ namespace RaceTo21_Blazor
 
         /* 
          * the method to do different next tasks
-         * call: GetNumberOfPlayers, GetPlayerName, AddPlayer, ShowPlayers, ShowHands, YesOrNo, DealTopCard, PointsInHand, CheckToEnd, CheckWinner, AnnounceWinner, Shuffle, ShufflePlayers
-         * called by: Program
+         * call: ShuffleDeck, AddPlayer, DealTopCard, PointsInHand, CheckToEnd, CardTable.CheckWinner, CardTable.AnnounceWinner, ShowScores, ShufflePlayers, GameReset
+         * called by: Pages.Index
          * parameter: no
          * return: no (void)
          */
-        //it seems we don't need this line since the first task in enum is GetNumberOfPlayers
         static public void DoNextTask()
         {
-            Console.WriteLine("================================" + nextTask);
-            //task for getting score of game goal
+            //task for saving setting
             if (nextTask == Tasks.SaveSetting)
             {
+                //shuffle the deck at the first time play the game or if a new round
+                //GameReset don't need to run at the first time
+                //so if deck.ShuffleDeck in GameReset it will shuffle deck twice if a new game start
                 deck.ShuffleDeck();
+                //add players to the players list according to numberOfPlayers
+                //length of playerNames might bigger than numberOfPlayers
+                //because it the fields will only hide after the number change and the names remains
                 for (int i = 0; i < numberOfPlayers; i++)
                 {
                     AddPlayer(Pages.Index.playerNames[i]);
                 }
+                //next task is for a player to get a card
                 nextTask = Tasks.PlayerTurn;
+                //show the get card frame if it is hide in previous round
                 Pages.Index.displayGetCard = "d-flex";
                 Console.WriteLine("================================");
             }
+            //the task to show the confirming frame of win or bust
             else if (nextTask == Tasks.ShowConfirming)
             {
-                /*
-                if (players[currentPlayer].points != 0 && players[currentPlayer].status == PlayerStatus.active) Pages.Index.displayGetCard = "d-flex";
-                else Pages.Index.displayGetCard = "d-none";
-                nextTask = Tasks.PlayerTurn;
-                */
+                //show the confirming frame of win or bust
                 Pages.Index.displayConfirming = "d-flex";
+                //next task is to check if to end the round
                 nextTask = Tasks.CheckForEnd;
             }
             //task for delivering cards for a player
@@ -107,9 +146,9 @@ namespace RaceTo21_Blazor
                 if (player.status == PlayerStatus.active)
                 {
                     //-----the better way to fix----- if no players take cards, they all “bust”
-                    //force players to get a card at the begining (player.points == 0)
-                    //should check player.points==0 before YesOrNo()
-                    //ask current player if they want a card and get the result : YesOrNo(player.name + ", do you want a card?"))
+                    //force players to get a card at the beginning (player.points == 0)
+                    //should check player.points==0 before Pages.Index.playerContinue
+                    //and check the result if a player want a card and 
                     if (player.points == 0 || Pages.Index.playerContinue)
                     {
                         //There are two args in the Card.Card field
@@ -139,7 +178,7 @@ namespace RaceTo21_Blazor
                     {
                         //if player didn't take a card then his status would be stay
                         player.status = PlayerStatus.stay;
-                        //check the highest points (player.points < 21 has exluded by above conditions
+                        //check the highest points (player.points < 21 has excluded by above conditions
                         if (player.points > firstHighPoints)
                         {
                             //save new highest points
@@ -149,28 +188,33 @@ namespace RaceTo21_Blazor
                         }
                     }
                 }
-                //show winner confirming when player did not has 21
-                if (player.status == PlayerStatus.bust) nextTask = Tasks.ShowConfirming;
+                //should also show winner confirming when player did not has 21
+                //so can't use following way to check
+                //the winner confirming will show in Tasks.CheckForEnd
                 //if (player.status == PlayerStatus.bust || player.status == PlayerStatus.win) nextTask = Tasks.ShowConfirming;
+                //show the busted confirming frame
+                if (player.status == PlayerStatus.bust) nextTask = Tasks.ShowConfirming;
+                //next task is to check if to go to the end of the current game
                 else nextTask = Tasks.CheckForEnd;
             }
             //task for checking if to go to the end of the current game
             else if (nextTask == Tasks.CheckForEnd)
             {
-                //Wrote a new field to check if the game is finished
-                //if (!CheckActivePlayers())
-                //check if current game needs to end
+                //if current round needs to end
                 if (CheckToEnd())
                 {
+                    //hide the get card frame
                     Pages.Index.displayGetCard = "d-none";
                     //check the highest points of players and players' status to find the winner
                     (Player winner, _) = CheckWinner();
                     //AnnounceWinner uses arg.name to show the name
                     CardTable.AnnounceWinner(winner);
+                    //show the winner confirming frame
                     Pages.Index.displayConfirming = "d-flex";
+                    //accumulate score of winner
                     winner.gamesScore += winner.points;
+                    //show the scores in console
                     CardTable.ShowScores(players);
-                    //Pages.Index.displayScores = "inherit";
                     Console.WriteLine("                       Goal: " + gamesGoal);
                     Console.WriteLine("================================");
                     //if gamesGoal score reached
@@ -179,25 +223,35 @@ namespace RaceTo21_Blazor
                         //use $ to allowe write value in string with {}
                         //https://learn.microsoft.com/zh-tw/dotnet/csharp/language-reference/tokens/interpolated
                         Console.WriteLine($"{winner.name} reached {gamesGoal} and is the final winner!!!");
+                        Console.WriteLine("================================");
                         Console.WriteLine("");
-                        //next task is to end the current game
+                        //store the finalWinner
                         finalWinner = winner;
+                        //next task is to end the current game
                         nextTask = Tasks.GameOver;
                     }
-                    else
+                    else //if gamesGoal score not reached
                     {
-                        Array.Fill(Pages.Index.joinNextRound, true);
+                        //go to the task for checking who want to continue in next round 
                         nextTask = Tasks.NextRound;
                     }
                 }
-                else //CheckToEnd() get false, can't find the winner
+                else //if CheckToEnd() get false, can't find the winner
                 {
+                    //checking who the next active player in a turn
+                    //if it is not active, should not run Tasks.PlayerTurn and asking get card
+                    //check from the next player to the previous player in a turn (currentPlayer + 1)
+                    //the players number to check is players.count
                     for (int i = currentPlayer + 1; i < players.Count + currentPlayer + 1; i++)
                     {
+                        //if i > the max id of the players list, then id in the list should be i-players.Count
                         if (i > players.Count - 1) i -= players.Count;
+                        //if found the next active
                         if (players[i].status == PlayerStatus.active)
                         {
+                            //store the i to the currentPlayer
                             currentPlayer = i;
+                            //stop checking
                             break;
                         }
                     }
@@ -205,11 +259,11 @@ namespace RaceTo21_Blazor
                     nextTask = Tasks.PlayerTurn;
                 }
             }
+            //task for checking who want to continue in next round
             else if (nextTask == Tasks.NextRound)
             {
+                //check the highest points of players and players' status to find the winner
                 (Player winner, _) = CheckWinner();
-                //restart a game with different players
-                //Program.Main();
 
                 //save winner's score, because we will remove and add later if he join the next game
                 int winnerScore = winner.gamesScore;
@@ -226,13 +280,14 @@ namespace RaceTo21_Blazor
                     }
                 }
                 //if only one player left or no one left or other situations make players.Count()<=1
+                //it will be more logical for me if players.Count()<=1 then end the game rather than the one only left win the game
                 if (players.Count <= 1)
                 {
                     Console.WriteLine("No enough players :(");
                     Console.WriteLine("================================");
-                    //it will be more logical for me if players.Count()<=1 then end the game rather than the one only left win the game
-                    //end the game
+                    //show the setting frame
                     Pages.Index.displaySetting = "inherit";
+                    //end the game
                     nextTask = Tasks.GameOver;
                 }
                 else //if more than one player left the new game
@@ -249,7 +304,6 @@ namespace RaceTo21_Blazor
                     //if winner in the game
                     if (winnerIn)
                     {
-                        Console.WriteLine("================================");
                         //{0} is the first arg, the line will show like: "The previous winner, AAA,..."
                         //https://learn.microsoft.com/zh-tw/dotnet/csharp/language-reference/tokens/interpolated
                         //----------------------------todo: show players shuffled on score board
@@ -272,18 +326,24 @@ namespace RaceTo21_Blazor
                     }
                     //save the new list number in case some players left
                     numberOfPlayers = players.Count;
+                    //reset the game
                     GameReset();
+                    //shuffle the deck
                     deck.ShuffleDeck();
-                    //next task is to introduce players
+                    //next task is for a player to get a card
                     nextTask = Tasks.PlayerTurn;
+                    //show the get card frame if it is hide in previous round
                     Pages.Index.displayGetCard = "d-flex";
                     Console.WriteLine("================================");
                 }
             }
             else if (nextTask == Tasks.GameOver)
             {
+                //reset the game
                 GameReset();
                 players = new();
+                numberOfPlayers = 2;
+                //task for setting up a new game
                 nextTask = Tasks.SaveSetting;
             }
             else //can't find nextTask or other situation
@@ -291,6 +351,8 @@ namespace RaceTo21_Blazor
                 Console.WriteLine("I'm sorry, I don't know what to do now!");
                 GameReset();
                 players = new();
+                numberOfPlayers = 2;
+                //show the setting frame
                 Pages.Index.displaySetting = "inherit";
                 nextTask = Tasks.SaveSetting;
             }
@@ -401,16 +463,19 @@ namespace RaceTo21_Blazor
         /* 
          * check the winner by players' points and status
          * call: CardTable.ShowHands - show current table
-         * called by: DoNextTask()
+         * called by: DoNextTask(), Pages.Index
          * parameter: no
-         * return: Player - player data
+         * return: Player - player data, int player ID
          */
         static public (Player, int?) CheckWinner()
         {
+            //for loop to check players list
             for (int i = 0; i < players.Count; i++)
             {
+                //check status
                 if (players[i].status == PlayerStatus.win)
                 {
+                    //return the player and the ID
                     return (players[i], i);
                 }
             }
@@ -419,6 +484,7 @@ namespace RaceTo21_Blazor
             //show result
             CardTable.ShowHands(players);
             Console.WriteLine("================================");
+            //if now one is win
             return (null, null);
         }
 
@@ -434,7 +500,7 @@ namespace RaceTo21_Blazor
         static private void ShufflePlayers()
         {
             Console.WriteLine("Shuffling Players...");
-            //claim a new radom
+            //claim a new random
             Random newOrder = new Random();
 
             //run for loop by players' count to shuffle players in list

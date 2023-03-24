@@ -1,14 +1,10 @@
 ﻿@page "/"
+@*for checking invalid fields in EditForms*@
 @using System.ComponentModel.DataAnnotations;
 
 <style>
     /*https://stackoverflow.com/questions/68116682/how-to-use-google-font-for-blazor-on-index-razor-page*/
     @@import url('https://fonts.googleapis.com/css2?family=Sofia+Sans+Condensed');
-
-    /*@@font-face {
-        font-family: 'Sofia Sans Condensed';
-        src: url(https://fonts.gstatic.com/s/sofiasanscondensed/v2/r05xGKVS5aVKd567NYXawnFKJaTtoAuLnK0EjiAN5s9CZwUqh-GckM4P.woff2) format('woff2');
-    }*/
 
     * {
         font-family: "Sofia Sans Condensed", sans-serif;
@@ -42,6 +38,7 @@
 
     .players {
         width: 798px;
+        min-width: 798px;
         height: 500px;
         border-width: 2px !important;
     }
@@ -50,7 +47,7 @@
         height: 100px;
     }
 
-    .playerItem{
+    .playerItem {
         width: 268px;
     }
 
@@ -64,7 +61,6 @@
     }
 
     .playerNum {
-        background-color: #8C8C8C; /*current #39A0EA*/
         color: #FFF;
         border-radius: 7px 0 0 7px;
         width: 25px;
@@ -74,11 +70,11 @@
         max-width: 140px;
     }
 
-    .playerName, .playerPoint {
-        background-color: #D9D9D9; /*win #F5B555*/
+    .playerName, .playerPoints {
+        background-color: #D9D9D9;
     }
 
-    .playerPoint {
+    .playerPoints {
         border-radius: 0 7px 7px 0;
         width: 43px;
     }
@@ -105,16 +101,16 @@
         bottom: 570px;
     }
 
-    .scoresFrame table, .scoresFrame span {
+    .scoresFrame table, .scoresFrame span, .nextRoundFrame table, .nextRoundFrame span {
         width: 300px;
     }
 
-    .scoresFrame table {
+    .scoresFrame table, .nextRoundFrame table {
         border-collapse: separate;
         border-spacing: 0px 6px;
     }
 
-    .scoresFrame td {
+    .scoresFrame td, .nextRoundFrame td {
         background-color: #D9D9D9;
         padding: 0 12px;
         height: 30px;
@@ -125,73 +121,108 @@
         width: 75%;
     }
 
-    .nextRoundFrame .row {
-        height: 300px;
-    }
-
-    .nextRoundFrame .form-check {
-        width: 200px;
-    }
-
     .score {
+        border-radius: 0 7px 7px 0;
+        width: 25%;
+    }
+
+    .nextRoundFrame .row, .scoresFrame .row {
+        height: 320px;
+    }
+
+    .checkTd {
+        border-radius: 7px 0 0 7px;
+        width: 10%;
+    }
+
+    .joinerScore {
         border-radius: 0 7px 7px 0;
         width: 25%;
     }
 
 </style>
 
-<div class="players container d-flex flex-column justify-content-between border border-light m-0">
+<!--using bootstrap classes-->
+<div class="players container d-flex flex-column justify-content-between border border-light">
+    <!--checking if there is variables for display the frame-->
+    <!--if players.Count<=1 that means somethings wrong and can only show the first item, and the bigger index in the list will be invalid-->
     @if (Game.players.Count > 1)
     {
-        int maxRow = 1;
-        switch (Game.numberOfPlayers)
+        //https://learn.microsoft.com/zh-tw/dotnet/fundamentals/code-analysis/style-rules/ide0066
+        //the other way to write switch condition
+        //the maxRow will change value according to numberOfPlayers
+        int maxRow = Game.numberOfPlayers switch
         {
-            case <= 3:
-                maxRow = 1;
-                break;
-            case <= 5:
-                maxRow = 2;
-                break;
-            case <= 8:
-                maxRow = 3;
-                break;
-        }
+            //if numberOfPlayers <=3
+            //the first 3 items show on the first row
+            <= 3 => maxRow = 1,
+            //the 4th and 5th item show on the second row
+            <= 5 => maxRow = 2,
+            //the 6th to 8th item show on the third row
+            <= 8 => maxRow = 3,
+        };
+        //the loop for each row
         for (int row = 1; row <= maxRow; row++)
         {
             <div class="playersRow row d-flex justify-content-between">
                 @{
+                    //define the row that the item in players list belong
+                    //default value is for the first row
+                    //the first item ID for the row
                     int start = 0;
+                    //the last item ID for the row
                     int end = 2;
                     switch (row)
                     {
+                        //the second row
                         case 2:
+                            //the itme ID is 4 and 5
                             start = 3;
                             end = 4;
                             break;
                         case 3:
+                            //in the third row, the itme ID is 5 to 7
                             start = 5;
                             end = 7;
                             break;
                     }
+                    //the number of items to show is numberOfPlayers
+                    //the end ID should not bigger than numberOfPlayers-1
+                    //the ID start from 0 since the player list ID also start from 0
                     if (end > Game.numberOfPlayers-1) end = Game.numberOfPlayers-1;
                     for (int index = start; index <= end; index++)
                     {
+                        //define the ID, so it will not use index that has run to last after the app create the frame
                         int id = index;
-                        <div class="playerItem col-4 p-0">
+                        //the opacity for the table to indicate inactive players
+                        string tableOpacity = "1";
+                        //define the string player status
+                        string playerStatus = Game.players[id].status.ToString();
+                        //set opacity to 0.5 if player is bust or stay
+                        if (playerStatus == "bust" || playerStatus == "stay") tableOpacity = "0.5";
+                        <div class="playerItem col-4 p-0" style="opacity:@tableOpacity">
                             <table>
                                 <tr>
-                                    <td class="playerNum text-center text-nowrap px-1">
+                                    @{
+                                        //the background color to indicate current player or winner
+                                        string blackColor = "#8C8C8C";
+                                        if (id == Game.currentPlayer) blackColor = "#007bff";
+                                        if (Game.players[id].status.ToString() == "win") blackColor = "#F39B16";
+                                    }
+                                    <td class="playerNum text-center text-nowrap px-1" style="background-color: @blackColor">
                                         @(id + 1)
                                     </td>
                                     <td class="playerName text-left text-nowrap text-truncate font-weight-bold">
                                         @Game.players[id].name
                                     </td>
-                                    <td class="playerPoint text-right text-nowrap">
+                                    <td class="playerPoints text-right text-nowrap">
                                         @Game.players[id].points<span class="text-secondary">/21</span>
                                     </td>
                                     <td class="playerStatus text-nowrap text-capitalize">
                                         @{
+                                            //get status color by status
                                             string color = StatusColor(Game.players[id].status);
+                                            //if player is active don't show the status desc
                                             string status = Game.players[id].status.ToString() == "active" ? "" : "● " + Game.players[id].status.ToString();
                                         }
                                         <span style="color: @color"><b>@status</b></span>
@@ -199,17 +230,26 @@
                                 </tr>
                             </table>
                             <div class="cards row p-2">
+                                <!--checking if there is variables for display the cards-->
+                                <!--if cards.Count<1 that nothing can display and the index in the list will be invalid-->
                                 @if (Game.players[id].cards.Count > 0)
                                 {
+                                    //the offest of the previous card
                                     int _offsetAdj = 0;
-                                    @for (int j = 0; j < Game.players[id].cards.Count; j++)
+                                    for (int j = 0; j < Game.players[id].cards.Count; j++)
                                     {
+                                        //define the ID, so it will not use index that has run to last after the app create the frame
                                         int cardID = j;
+                                        //the offest for the current card
                                         int offsetAdj = _offsetAdj;
                                         string offsetString = offsetAdj.ToString() + "px";
+                                        //show the desc tooltip of card face
+                                        //use ID to get the text color of tool tip, method wrote in Tooltip.razor
                                         <Tooltip Color=@Game.players[id].cards[cardID].id Text=@Game.players[id].cards[cardID].id>
-                                            <img style="position: absolute; left: @offsetString" src="card_assets/@Game.deck.cardImg[Game.players[id].cards[cardID].id]" />
+                                            <!--hover the img will show the tool tip-->
+                                            <img style="position: absolute; left: @offsetString" src="card_assets/@Game.players[id].cards[cardID].img" />
                                         </Tooltip>
+                                        //the offest for the next card
                                         _offsetAdj += 22;
                                     }
                                 }
@@ -222,34 +262,48 @@
     }
 </div>
 
-<!-- -------------------------up/down change foucs -->
-<!-- -------------------------change invalid value immediately on number fields-->
+<!--event list - https://www.w3schools.com/tags/ref_eventattributes.asp-->
+<!--hide or show by displaySetting-->
 <div class="settingFrame container position-relative pt-3 rounded border border-primary" style="display: @displaySetting">
-    <h5 class="text-center font-weight-bold text-primary">Race to 21</h5>
-    <form class="">
+    <h3 class="text-center font-weight-bold text-primary">Race to 21</h3>
+    <form>
         <div class="input-group col-4 p-0">
             <span class="input-group-text">Players Count</span>
-            <input type="number" class="form-control" min="2" max="8" value="2" @onchange=GetPlayersNum />
+            <!--https://learn.microsoft.com/zh-tw/aspnet/core/blazor/components/data-binding?view=aspnetcore-7.0-->
+            <!--https://learn.microsoft.com/en-us/aspnet/core/blazor/components/event-handling?view=aspnetcore-7.0-->
+            <!--bind=Game.numberOfPlayers: number wrote in the field is bind to numberOfPlayers, value of numberOfPlayers will change accordingly-->
+            <!--bind:event=oninput: numberOfPlayers will change when inputting-->
+            <!--onkeydown="(e)=>InputEnter(e, 9): the method that trigger when press down a key. 9 is the id of the field. sending the original arg and id to the method-->
+            <!--onkeypress="this.select()": when press a key select the texts on the field to change all the texts. since the typing number is between 2 to 8, if we didn't select all the texts the number will not change-->
+            <!--ref=input[9]: the reference for changing focus-->
+            <input type="number" class="form-control" min="2" max="8" @bind=Game.numberOfPlayers @bind:event=oninput @onkeydown="(e)=>InputEnter(e, 9)" onkeypress="this.select()" @ref=input[9] />
         </div>
-        <!--press enter will make onchange GetPlayerName shows error, so here use @oninput="(e)=>GetPlayerName(e, id)"-->
-        @for (int i = 0; i<8; i++)
+        <!--show the name fields according to the above input field immediately-->
+        @for (int i = 0; i < Game.numberOfPlayers; i++)
         {
             int id = i;
-            <div class="input-group" style="display:@showNameField[id]">
+            <div class="input-group">
                 <span class="input-group-text">Player @(id+1)</span>
-                <input type="text" class="form-control" style="border-color:@borderColors[id]" placeholder="Enter Player's Name" @oninput="(e)=>GetPlayerName(e, id)" @onkeydown="(e)=>InputEnter(e, id)" @ref=input[id] />
+                <!--value=playerNames[id] here is for reset the fields because the text users input remain in the frame-->
+                <!--press enter will make onchange shows error, onchange event (bind:event=onchange or onchange=XXX) can't work with onkeydown-->
+                <!--so here use oninput="(e)=>GetPlayerName(e, id)"-->
+                <!--onkeydown checks the previous status-->
+                <!--since checking same name in oninput event is needed, playerNames[id] can't be binded by an event-->
+                <input type="text" class="form-control" style="border-color:@borderColors[id]" placeholder="Enter Player's Name" value=@playerNames[id] @oninput="(e)=>GetPlayerName(e, id)" @onkeydown="(e)=>InputEnter(e, id)" @ref=input[id] />
             </div>
         }
         <span class="text-danger" style="visibility:@showWarning">Invalid names or the name have been taken</span>
-        <div class="input-group col-6 p-0 mx-auto my-3">
+        <div class="input-group col-6 p-0 mx-auto mt-2 mb-3">
             <span class="point-win input-group-text">Points to Win in Rounds</span>
-            <input type="number" class="form-control" min="1" max="210" value="21" @onchange=GetGameGoal />
+            <input type="number" class="form-control" min="1" max="210" @bind=Game.gamesGoal @bind:event=oninput @onkeydown="(e)=>InputEnter(e, 8)" @ref=input[8] />
         </div>
+        <!--onclick=SaveSettings: click on the button to run SaveSettings-->
         <input class="d-block btn btn-sm btn-primary w-25 mx-auto" type="button" value="Start" @onclick=SaveSettings />
     </form>
 </div>
 @if (Game.players.Count > 1)
 {
+    //@displayGetCard: show or hide the frame by d-flex or d-none class
     <div class="getCardFrame container @displayGetCard flex-column justify-content-center align-items-center position-relative rounded border border-primary">
         <h3 class="text-primary font-weight-bold">
             Player @(Game.currentPlayer+1) - @Game.players[Game.currentPlayer].name
@@ -258,6 +312,7 @@
         <br />
         <br />
         <div class="d-flex justify-content-around w-100">
+            <!--onclick="()=>PlayerGetCard(false): send false arg to the method, the args in onclick is not needed, so the left "()" is empty -->
             <input class="d-block btn btn-sm btn-warning w-25" type="button" value="No" @onclick="()=>PlayerGetCard(false)" />
             <input class="d-block btn btn-sm btn-primary w-25" type="button" value="Yes" @onclick="()=>PlayerGetCard(true)" />
         </div>
@@ -267,14 +322,22 @@
 {
     <div class="confirmingFrame container @displayConfirming flex-column justify-content-center align-items-center position-relative rounded border border-primary">
         @{
+            //get the winner ID
             (_, int? winnerID) = Game.CheckWinner();
+            //if there is no winner id, use the current id to bust message
+            //the frame only shows when a player bust or win
+            //if winnerID is null, then id=currentPlayer
             int id = winnerID ?? Game.currentPlayer;
+            //sometimes the frame should cover the get card frame, sometimes there is not get card frame to cover
+            //so the offset should be change accordingly
             string offset = "";
             if (displayGetCard == "d-none") offset = "bottom: 360px";
             else offset = "bottom: 570px";
             <h3 class="text-primary font-weight-bold">
                 Player @(id + 1) - @Game.players[id].name
             </h3>
+            <!--if player status is win, show "You win this round!" (used status.ToString())-->
+            <!--if player status is bust, show "You bust!" (used status.ToString())-->
             string statusString = Game.players[id].status == PlayerStatus.win ? " this round!" : "!";
             <h4 style="color: @StatusColor(Game.players[id].status)"><b>You @Game.players[id].status.ToString()@statusString</b></h4>
             <style>
@@ -291,8 +354,9 @@
 }
 <div class="scoresFrame container position-relative pt-3 rounded border border-primary" style="display: @displayScores">
     <h3 class="text-center font-weight-bold text-primary">Points Board</h3>
-    <div class="row d-flex flex-column align-items-center gy-1">
+    <div class="row d-flex flex-column align-items-center justify-content-start gy-1">
         @{
+            //the other way to show the message on the scores frame
             /*string lineDesc = $"Points to Win in Rounds: {Game.gamesGoal}";
             string lineStyle = Game.finalWinner != null ? "color:#F39B16; font-weight:bold;" : "#000";
             if (Game.finalWinner != null)
@@ -302,13 +366,14 @@
             <span class="text-right" style="@lineStyle">
                 @lineDesc
             </span>*/
-
+            //the message for found the final winner
             if (Game.finalWinner != null)
             {
-                <span class="text-right" style="color:#F39B16; font-weight:bold;">
+                <span class="text-right font-weight-bold" style="color:#F39B16">
                     <span class="text-primary">@Game.finalWinner.name</span> reached <span class="text-primary">@Game.gamesGoal</span> points and is the final winner!!!
                 </span>
             }
+            //the general message
             else
             {
                 <span class="text-right">
@@ -316,42 +381,66 @@
                 </span>
             }
         }
-        @if (CardTable.scoresRanking.Count > 1)
-        {
-            <table>
-                @for (int index = 0; index < CardTable.scoresRanking.Count; index++)
+        <table>
+            <!--checking if there is variables for display the frame-->
+            <!--if CardTable.scoresRanking.Count<=1 that means somethings wrong and can only show the first item, and the bigger index in the list will be invalid-->
+            @if (CardTable.scoresRanking.Count > 1)
+            {
+                //show the scores in ranking that store in scoresRanking list
+                for (int index = 0; index < CardTable.scoresRanking.Count; index++)
                 {
                     int id = index;
                     <tr>
-                        <td class="scoreName text-left text-nowrap text-truncate font-italic">
+                        <td class="scoreName text-left text-nowrap text-truncate font-italic font-weight-bold">
                             @CardTable.scoresRanking[id].name
                         </td>
                         <td class="score text-right text-nowrap text-primary font-weight-bold">
-                            @CardTable.scoresRanking[id].gamesScore
+                            @CardTable.scoresRanking[id].gamesScore Points
                         </td>
                     </tr>
                 }
-            </table>
-        }
-        <input class="d-block btn btn-sm btn-primary w-25 mt-2" type="button" value="Okay" @onclick=ScoresClick />
+            }
+        </table>
+    </div>
+    <div class="text-center">
+        <input class="btn btn-sm btn-primary w-25 mt-2" type="button" value="Okay" @onclick=ScoresClick />
     </div>
 </div>
 <div class="nextRoundFrame container position-relative pt-3 rounded border border-primary" style="display: @displayNextRound">
-    <h3 class="text-center font-weight-bold text-primary my-2">Players Who Want to Continue Playing</h3>
-    <div class="row d-flex flex-column align-items-center justify-content-center gy-1">
-        <!-- -------------------------make as table-->
-        <!-- -------------------------No enough players :(-->
-        @if (Game.players.Count > 1)
-        {
-            @for (int index = 0; index < Game.players.Count; index++)
-            {
-                int id = index;
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" @bind=joinNextRound[id] @bind:event=onchange />
-                    <label class="h5 mb-0">@Game.players[id].name</label>
-                </div>
-            }
+    <h3 class="text-center font-weight-bold text-primary">Players Who Want to Continue Playing</h3>
+    <div class="row d-flex flex-column align-items-center justify-content-start gy-1">
+        @{
+            //show or hide the message to notify player that the game will end if no enough players
+            //default is hidden
+            string gameOver = "hidden";
+            //if num of players smaller than two then show the warning message
+            if (CountingJoin() <= 1) gameOver = "visible";
+            <span class="text-right text-danger" style="visibility:@gameOver">
+                The game will end if players are fewer than two
+            </span>
         }
+        <table>
+            @if (Game.players.Count > 1)
+            {
+                //show the checking table for asking if players want to continue
+                for (int index = 0; index < Game.players.Count; index++)
+                {
+                    int id = index;
+                    <tr>
+                        <!--the checking button is bind to joinNextRound array by onchange event to get the result of player's decision-->
+                        <td class="checkTd">
+                            <input class="my-2" type="checkbox" @bind=joinNextRound[id] @bind:event=onchange />
+                        </td>
+                        <td class="text-left text-nowrap text-truncate font-weight-bold px-0">
+                            @Game.players[id].name
+                        </td>
+                        <td class="joinerScore text-right text-nowrap text-primary font-weight-bold">
+                            @Game.players[id].gamesScore Points
+                        </td>
+                    </tr>
+                }
+            }
+        </table>
     </div>
     <div class="text-center">
         <input class="btn btn-sm btn-primary w-25 mt-2" type="button" value="Okay" @onclick=NextRoundClick />
@@ -361,8 +450,12 @@
 <!-- -------------------------my_sample-------------------------
 <div class="container">
     <div>
-        <h5>@playerName</h5>
-        <input type="text" @bind=playerName @bind:event=oninput>
+        <h5>@testNum</h5>
+        <input type="text" @bind=testNum @bind:event=oninput /><br />
+        <input type="number" @bind=testNum @bind:event=oninput @onchange=NumChange /><br />
+        <input type="number" @onchange=NumChange /><br />
+        <input type="text" value=@testNum /><br />
+        <input type="button" value="Click" @onclick=NumChange /><br />
     </div>
 </div><br /> -->
 <!-- this is able to work but don't know how to use ref -->
@@ -389,9 +482,10 @@
 
 @code {
     //---------------------------my_sample-----------------------------
-    static private ElementReference inputA;
-    static private PlayerForm playerForm = new();
+    private ElementReference inputA;
+    private PlayerForm playerForm = new();
     static public List<string> InvalidNames = new List<string> { "222" };
+    static private string[] showNameField = new string[] { "flex", "flex", "none", "none", "none", "none", "none", "none" };
     private void ShowNameFields(ChangeEventArgs e)
     {
         int count = int.TryParse(e.Value.ToString(), out int noUse) ? Int16.Parse(e.Value.ToString()) : 2;
@@ -406,14 +500,19 @@
         if (count < 2) count = 2;
         //Game.numberOfPlayers = count;
     }
-    static void PlayerSave()
+    private void PlayerSave()
     {
         //playerName = playerForm.Name1;
     }
-    static string playerName { get; set; }
+    private int _testNum = 999;
+    private int testNum { get; set; }
+    private void NumChange()
+    {
+        testNum = 55;
+    }
 
-    static List<string> playerCards = new List<string> { "7♦", "8♠", "5♣", "3♥", "Q♠" };
-    static Dictionary<string, string> cardImg = new Dictionary<string, string>()
+    private List<string> playerCards = new List<string> { "7♦", "8♠", "5♣", "3♥", "Q♠" };
+    private Dictionary<string, string> cardImg = new Dictionary<string, string>()
     {
         {"7♦", "card_diamonds_07.png"},
         {"8♠", "card_spades_08.png"},

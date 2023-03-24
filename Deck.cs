@@ -10,10 +10,8 @@ namespace RaceTo21_Blazor
     {
         //replaced string with Card class to store short and long name
         //List<string> cards = new List<string>();
-        //save cards privatly
-        private List<Card> cards = new List<Card>();
-        //claim cardImg as a Dictionary to store the img
-        public Dictionary<string, string> cardImg = new Dictionary<string, string>() { };
+        //save cards privately
+        private readonly List<Card> cards = new List<Card>();
 
         public Deck()
         {
@@ -22,6 +20,8 @@ namespace RaceTo21_Blazor
             //since we need longname and shortname
             //we can only store longnames of the suits and get its first character for shortname
             string[] suits = { "Spades", "Hearts", "Clubs", "Diamonds" };
+            //use icon to show cards in the webpage
+            //create a dictionary by key is suits and value is icon
             Dictionary<string, string> cardIcon = new Dictionary<string, string>()
             {
                 {"Spades", "♠"},
@@ -68,10 +68,7 @@ namespace RaceTo21_Blazor
                             longName = numToWords[cardNum-1];
                             break;
                     }
-                    //cards.Add(shortName + cardSuit);
-                    //cards.Add(new Card(shortName + cardSuit));
-                    //cards.Add(new Card(shortName + cardSuit.Last<char>(), longName + " of " + cardSuit));
-                    //add the card to the card list with id and displayName
+                    //add the card to the card list with id(inculding icon) and displayName
                     //cards.Add(new Card(shortName + cardSuit.First<char>(), longName + " of " + cardSuit));
                     cards.Add(new Card(shortName + cardIcon[cardSuit], longName + " of " + cardSuit));
                     //-----the other way to add the card image without a method or using Regex
@@ -85,16 +82,6 @@ namespace RaceTo21_Blazor
                     }*/
                 }
             }
-            //add card images to the dictionary by the index of the cards
-            SetCardImg();
-            /*//testing, see comments on SetCardImg
-            Console.WriteLine("---------------------------"+cards[2].displayName.Substring(cards[2].displayName.LastIndexOf(" of ")+4).ToLower());
-            string numTest = Regex.IsMatch(cards[2].id.Substring(0, 1), "[AJQK]") ? cards[2].id.Substring(0, 1) : cards[2].id.Substring(0, 1).PadLeft(2, '0');
-            Console.WriteLine("---------------------------" + cards[2].id);
-            Console.WriteLine("---------------------------" + numTest);
-            //*****call the card image by id*****
-            Console.WriteLine(cardImg[cards[2].id]);
-            */
         }
 
         /* 
@@ -178,35 +165,6 @@ namespace RaceTo21_Blazor
             //remove the last card from the deck
             cards.RemoveAt(cards.Count - 1);
             return (card, cardLong);
-        }
-
-        /* 
-         * set the img of each card
-         * call: no
-         * called by: deck
-         * parameter: no
-         * return: no (void)
-         */
-        private void SetCardImg()
-        {
-            //run for loop by cards's count to set the img of each card
-            for (int i=0; i<cards.Count; i++)
-            {
-                //source: I used a lot of regex in the projects I wrote long time ago, https://www.curseforge.com/members/matif525/projects
-                //https://learn.microsoft.com/zh-tw/dotnet/api/system.text.regularexpressions.regex.ismatch?view=net-7.0
-                //https://learn.microsoft.com/zh-tw/dotnet/api/system.string.substring?view=net-7.0
-                //https://learn.microsoft.com/zh-tw/dotnet/api/system.string.padleft?view=net-7.0
-                //https://learn.microsoft.com/zh-tw/dotnet/api/system.string.indexof?view=net-7.0
-                //Substring(0, 1) : remain string characters from 0 to 1
-                //Use regular expression to find if the string contain A, J, Q, or K
-                //if contained, do not add 0 before it
-                //todo: diff between Match and IsMatch - seems nothing different
-                //string num = Regex.Match(cards[i].id.Substring(0, 1), "[AJQK]").Success ? cards[i].id.Substring(0, 1) : cards[i].id.Substring(0, 1).PadLeft(2, '0');
-                string num = Regex.IsMatch(cards[i].id.Substring(0, 1), "[AJQK]") ? cards[i].id.Substring(0, 1) : cards[i].id.Length==3 ? cards[i].id.Substring(0, 2) : cards[i].id.Substring(0, 1).PadLeft(2, '0');
-                //find the index of " of " and remain the characters after " of " according to the index
-                //there are four index in " of ", so we need to + 4 to cut it
-                cardImg.Add(cards[i].id, "card_" + cards[i].displayName.Substring(cards[i].displayName.IndexOf(" of ") + 4).ToLower() + "_" + num + ".png");
-            }
         }
     }
 }

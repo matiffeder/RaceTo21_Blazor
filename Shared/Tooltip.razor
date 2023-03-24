@@ -1,20 +1,33 @@
 ﻿
+<!--https://learn.microsoft.com/zh-tw/aspnet/core/blazor/components/?view=aspnetcore-7.0-->
+
+<!--the layout for the tooltip component-->
 <div class="tooltip-container">
+    <!--@ChildContent is needed, it is the content between the <Tooltip></Tooltip>-->
     @ChildContent
+    <!--making two tag @Color @Text for use in <Tooltip>-->
+    <!--@Text will be the tooltip desc-->
     <span style="color: @Color">@Text</span>
 </div>
 
 
 @code {
+    //create a parameter for the tag
     [Parameter] public string Text { get; set; }
-    //[Parameter] public string Color { get; set; } = "#fff";
+
     private string _color;
-    [Parameter] public string Color {
+    //create a parameter to get the color by string(icon), should be public
+    [Parameter] public string Color
+    {
         get {
+            //https://learn.microsoft.com/zh-tw/dotnet/api/system.string.contains?view=net-7.0
+            //if the string usd in <Tooltip> contains ♥ or ♦
             if (_color.Contains("♥") || _color.Contains("♦"))
+                //return the red color and set in above html style that for <Tooltip>
                 return "red";
             else if (_color.Contains("♠") || _color.Contains("♣"))
                 return "#fff";
+            //if not contains above icons, use the original string
             else return _color;
         }
         set { _color = value; }
