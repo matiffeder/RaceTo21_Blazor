@@ -10,7 +10,7 @@
 
 * If no one reaches 21 in a round and players are all stay or bust, the player who reaches the highest score in this round first and stays would win the round. Not the player whose turn is earlier in a turn win the round. 
 
-* Ask all players if they want to continue the next round after finding a winner.  
+* [Additional] Show the score of players in order after finding a winner.  
 → Then, ask each player if they want to join the next round.  
 → If only one player is left, that one wins.  
 → [Additional] If no one remain in the game, the game goes to the end.  
@@ -20,4 +20,3 @@
 #### Other Additional Improvements:
 * Check if the player inputs the name that has already been taken.
 * Force people to get a card in the first round (Different from the logic in the homework).
-* Show the scores in order.
