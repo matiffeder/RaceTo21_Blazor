@@ -1,0 +1,125 @@
+/* /Shared/MainLayout.razor.rz.scp.css */
+.page[b-jolfgvbppd] {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.main[b-jolfgvbppd] {
+    flex: 1;
+}
+
+.sidebar[b-jolfgvbppd] {
+    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+}
+
+.top-row[b-jolfgvbppd] {
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #d6d5d5;
+    justify-content: flex-end;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+}
+
+    .top-row[b-jolfgvbppd]  a, .top-row .btn-link[b-jolfgvbppd] {
+        white-space: nowrap;
+        margin-left: 1.5rem;
+    }
+
+    .top-row a:first-child[b-jolfgvbppd] {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+@media (max-width: 640.98px) {
+    .top-row:not(.auth)[b-jolfgvbppd] {
+        display: none;
+    }
+
+    .top-row.auth[b-jolfgvbppd] {
+        justify-content: space-between;
+    }
+
+    .top-row a[b-jolfgvbppd], .top-row .btn-link[b-jolfgvbppd] {
+        margin-left: 0;
+    }
+}
+
+@media (min-width: 641px) {
+    .page[b-jolfgvbppd] {
+        flex-direction: row;
+    }
+
+    .sidebar[b-jolfgvbppd] {
+        width: 250px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+
+    .top-row[b-jolfgvbppd] {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .main > div[b-jolfgvbppd] {
+        padding-left: 2rem !important;
+        padding-right: 1.5rem !important;
+    }
+}
+
+/* /Shared/Tooltip.razor.rz.scp.css */
+/*
+.tooltip-container {
+    display: inline-flex;
+    justify-content: center;
+    align-items: end;
+}
+
+.tooltip-container span {
+    position: absolute;
+    width: 35px;
+    height: 23px;
+    visibility: hidden;
+    background-color: #333;
+    text-align: center;
+    border-radius: 3px;
+    z-index: 10;
+}
+
+.tooltip-container:hover span {
+    visibility: visible;
+}
+*/
+/*
+                    <Tooltip Color=@playerCards[0] Text=@playerCards[0]>
+                        <img src="card_assets/@cardImg[playerCards[0]]" />
+                    </Tooltip>
+                    int _offsetAdj = 16;
+                    _offsetAdj + = 22;
+*/
+
+
+.tooltip-container[b-dw8d2m5naj] {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-container span[b-dw8d2m5naj] {
+    position: absolute;
+    visibility: hidden;
+    width: 36px;
+    left: -36px;
+    background-color: #333;
+    text-align: center;
+    border-radius: 3px;
+    z-index: 1;
+}
+
+.tooltip-container:hover span[b-dw8d2m5naj] {
+    visibility: visible;
+}
+
+
