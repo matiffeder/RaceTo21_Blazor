@@ -479,9 +479,6 @@ namespace RaceTo21_Blazor
                     return (players[i], i);
                 }
             }
-            //define the highPoints as 0 first to check highest point later
-            //int highPoints = 0;
-            //show result
             CardTable.ShowHands(players);
             Console.WriteLine("================================");
             //if now one is win
