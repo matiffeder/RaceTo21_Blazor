@@ -309,8 +309,7 @@
             Player @(Game.currentPlayer+1) - @Game.players[Game.currentPlayer].name
         </h3>
         <span>Do you want a card?</span>
-        <br />
-        <br />
+        <pre><br /><br /></pre>
         <div class="d-flex justify-content-around w-100">
             <!--onclick="()=>PlayerGetCard(false): send false arg to the method, the args in onclick is not needed, so the left "()" is empty -->
             <input class="d-block btn btn-sm btn-warning w-25" type="button" value="No" @onclick="()=>PlayerGetCard(false)" />
@@ -347,8 +346,7 @@
                 }
             </style>
         }
-        <br />
-        <br />
+        <pre><br /><br /></pre>
         <input class="d-block btn btn-sm btn-primary w-25" type="button" value="Okay" @onclick=ConfirmingClick />
     </div>
 }
