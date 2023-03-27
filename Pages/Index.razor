@@ -235,7 +235,7 @@
                                 @if (Game.players[id].cards.Count > 0)
                                 {
                                     //the offest of the previous card
-                                    int _offsetAdj = 0;
+                                    int _offsetAdj = 7;
                                     for (int j = 0; j < Game.players[id].cards.Count; j++)
                                     {
                                         //define the ID, so it will not use index that has run to last after the app create the frame
@@ -390,11 +390,13 @@
                 for (int index = 0; index < CardTable.scoresRanking.Count; index++)
                 {
                     int id = index;
+                    //if there is a final winner highlight the final winner (the first row)
+                    string winColor = Game.finalWinner != null && id == 0 ? "#F7C16F" : "#D9D9D9";
                     <tr>
-                        <td class="scoreName text-left text-nowrap text-truncate font-italic font-weight-bold">
+                        <td class="scoreName text-left text-nowrap text-truncate font-italic font-weight-bold" style="background-color: @winColor">
                             @CardTable.scoresRanking[id].name
                         </td>
-                        <td class="score text-right text-nowrap text-primary font-weight-bold">
+                        <td class="score text-right text-nowrap text-primary font-weight-bold" style="background-color: @winColor">
                             @CardTable.scoresRanking[id].gamesScore Points
                         </td>
                     </tr>
