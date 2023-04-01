@@ -102,6 +102,8 @@ namespace RaceTo21_Blazor.Pages
                     }
                 }
             }
+            //if no field is invalid
+            showWarning = "hidden";
             for (int i = 0; i < Game.numberOfPlayers; i++)
             {
                 //if any of the field is invalid (borderColors[i]="red"), including "red" by onther functions
@@ -111,8 +113,6 @@ namespace RaceTo21_Blazor.Pages
                     showWarning = "visible";
                     break;
                 }
-                //if no field is invalid
-                showWarning = "hidden";
             }
             //return bool according if found the same name
             return foundSame;
@@ -132,7 +132,7 @@ namespace RaceTo21_Blazor.Pages
         {
             //if key is enter, down, or up (used Console.WriteLine found the values)
             //Console.WriteLine("-------------------------------------" + e.Key);
-            if (e.Key == "Enter" || e.Key == "ArrowDown" || e.Key == "ArrowUp")
+            if (e.Key == "Enter" || e.Key == "Tab" || e.Key == "ArrowDown" || e.Key == "ArrowUp")
             {
                 //if input field is for a player name
                 if (inputID <= 7)
@@ -151,15 +151,18 @@ namespace RaceTo21_Blazor.Pages
                     }
                     //checking if the name in the field is invalid, should run after checking null to show the highlight that is not null
                     CheckAllSameNames();
-                    //the inputID for name field is bound with player list, so they are from 0 - 7
-                    //if it is not the last field for names, go to the field below
-                    if (inputID < Game.numberOfPlayers - 1 && e.Code != "ArrowUp") _ = input[inputID + 1].FocusAsync();
-                    //if it is not the first field for names, go to the field above 
-                    if (inputID > 0 && e.Code == "ArrowUp") _ = input[inputID - 1].FocusAsync();
-                    //if it is the last field for names, go to the field of points to win
-                    if (inputID == Game.numberOfPlayers - 1 && e.Code != "ArrowUp") _ = input[8].FocusAsync();
-                    //if it is the first field for names, go to the field of num of players
-                    if (inputID == 0 && e.Code == "ArrowUp") _ = input[9].FocusAsync();
+                    if (e.Key != "Tab")
+                    {
+                        //the inputID for name field is bound with player list, so they are from 0 - 7
+                        //if it is not the last field for names, go to the field below
+                        if (inputID < Game.numberOfPlayers - 1 && e.Code != "ArrowUp") _ = input[inputID + 1].FocusAsync();
+                        //if it is not the first field for names, go to the field above 
+                        if (inputID > 0 && e.Code == "ArrowUp") _ = input[inputID - 1].FocusAsync();
+                        //if it is the last field for names, go to the field of points to win
+                        if (inputID == Game.numberOfPlayers - 1 && e.Code != "ArrowUp") _ = input[8].FocusAsync();
+                        //if it is the first field for names, go to the field of num of players
+                        if (inputID == 0 && e.Code == "ArrowUp") _ = input[9].FocusAsync();
+                    }
                 }
             }
             if (e.Key == "Enter")

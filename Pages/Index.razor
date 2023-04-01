@@ -236,18 +236,16 @@
                                 {
                                     //the offest of the previous card
                                     int _offsetAdj = 7;
-                                    for (int j = 0; j < Game.players[id].cards.Count; j++)
+                                    foreach (Card card in Game.players[id].cards)
                                     {
-                                        //define the ID, so it will not use index that has run to last after the app create the frame
-                                        int cardID = j;
                                         //the offest for the current card
                                         int offsetAdj = _offsetAdj;
                                         string offsetString = offsetAdj.ToString() + "px";
                                         //show the desc tooltip of card face
                                         //use ID to get the text color of tool tip, method wrote in Tooltip.razor
-                                        <Tooltip Color=@Game.players[id].cards[cardID].id Text=@Game.players[id].cards[cardID].id>
+                                        <Tooltip Color=@card.id Text=@card.id>
                                             <!--hover the img will show the tool tip-->
-                                            <img style="position: absolute; left: @offsetString" src="card_assets/@Game.players[id].cards[cardID].img" />
+                                            <img style="position: absolute; left: @offsetString" src="card_assets/@card.img" />
                                         </Tooltip>
                                         //the offest for the next card
                                         _offsetAdj += 22;
@@ -387,6 +385,7 @@
                 //show the scores in ranking that store in scoresRanking list
                 for (int index = 0; index < CardTable.scoresRanking.Count; index++)
                 {
+                    //***define the ID, so it will not use index that has run to last after the app create the frame
                     int id = index;
                     //if there is a final winner highlight the final winner (the first row)
                     string winColor = Game.finalWinner != null && id == 0 ? "#F7C16F" : "#D9D9D9";
@@ -423,7 +422,7 @@
             @if (Game.players.Count > 1)
             {
                 //show the checking table for asking if players want to continue
-                for (int index = 0; index < Game.players.Count; index++)
+                for (int index = 0; index < CardTable.scoresRanking.Count; index++)
                 {
                     int id = index;
                     <tr>
@@ -432,10 +431,10 @@
                             <input class="my-2" type="checkbox" @bind=joinNextRound[id] @bind:event=onchange />
                         </td>
                         <td class="text-left text-nowrap text-truncate font-weight-bold px-0">
-                            @Game.players[id].name
+                            @CardTable.scoresRanking[id].name
                         </td>
                         <td class="joinerScore text-right text-nowrap text-primary font-weight-bold">
-                            @Game.players[id].gamesScore Points
+                            @CardTable.scoresRanking[id].gamesScore Points
                         </td>
                     </tr>
                 }
